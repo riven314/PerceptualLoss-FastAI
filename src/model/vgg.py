@@ -8,12 +8,12 @@ class VGG16(torch.nn.Module):
     def __init__(self, requires_grad = False):
         super(VGG16, self).__init__()
         vgg = models.vgg16(pretrained = True).features
-        self.vgg_subnet = torch.nn.Sequential()
+        self.subnet = torch.nn.Sequential()
         for i in range(23):
-            self.vgg_subnet.add_module(str(i), vgg[i])
+            self.subnet.add_module(str(i), vgg[i])
     
     def forward(self, x):
-        return self.vgg_subnet(x)
+        return self.subnet(x)
 
 
 class VGG16_woHook(torch.nn.Module):
