@@ -3,12 +3,8 @@ reference:
 - most code extracted from fastai source code: https://github.com/fastai/fastai/blob/master/fastai/callbacks/hooks.py#L34
 """
 import os
+from collections import namedtuple
 
-HOOK_VGG_IDXS = [3, 8, 15, 22] # layer indexes of VGG net to be hooked
-
-
-def hook_feature(m, inp, outp):
-    return outp
 
 class Hook():
     def __init__(self, m, hook_func, detach = True):
@@ -52,9 +48,15 @@ class Hook():
         self.remove()
 
 
-class Hooks():
-    def __init__(self, ms, hook_func, detach = True):
-        self.hooks = [Hook(m, hook_func,detach) for m in ms]
+class VGGHooks():
+    def __init__(self, ms):
+        """
+        assume ms is in the right order: vgg[3], vgg[8], vgg[15], vgg[22]
+        """
+        self.hooks = [Hook(m, self.hook_feature, detach = True) for m in ms]
+
+    def hook_feature(self, m, inp, outp):
+        return outp
 
     def __getitem__(self,i):
         return self.hooks[i]
@@ -66,8 +68,11 @@ class Hooks():
         return iter(self.hooks)
 
     @property
-    def stored(self): 
-        return [o.stored for o in self]
+    def stored(self):
+        vgg_tup = namedtuple(
+            'VggOutputs', ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3']
+            )
+        return vgg_tup(*[o.stored for o in self])
 
     def remove(self):
         for h in self.hooks: h.remove()

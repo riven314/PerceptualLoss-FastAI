@@ -13,5 +13,4 @@ Implementing ["Perceptual Losses for Real-Time Style Transfer and Super-Resoluti
 ## Log
 ### [01/04/2020]
 - need to integrate torch Dataset into fastai framework
-- need to figure out way to propagate hooked result to loss function
-- in what stage should I calculate the intermediate output of the style image
+- need to test MetaModel class, whether the hook result change with input feed
