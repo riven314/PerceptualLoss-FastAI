@@ -11,6 +11,9 @@ Implementing ["Perceptual Losses for Real-Time Style Transfer and Super-Resoluti
 6. [medium -- 10 Useful ML Practices For Python Developers](https://medium.com/modern-nlp/10-great-ml-practices-for-python-developers-b089eefc18fc)
 
 ## Log
-### [01/04/2020]
+#### [02/04/2020]
 - need to integrate torch Dataset into fastai framework
 - need to test MetaModel class, whether the hook result change with input feed
+  
+#### [03/04/2020]
+- left with dataset definition
