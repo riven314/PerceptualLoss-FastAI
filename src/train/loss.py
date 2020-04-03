@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from src.common.lin_utils import gram_matrix
 
 
-class NeuralStyleLoss(nn.Module):
+class PerceptualLoss(nn.Module):
     def __init__(self, model, content_weight, style_weight):
         super().__init__()
         self.meta_model = model

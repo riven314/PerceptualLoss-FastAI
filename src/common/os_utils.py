@@ -9,20 +9,16 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
                     format = "%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 
 
-def load_img(img_path, resize = None):
+def load_img(img_path):
     """
     both read fname image and resize it
 
     :param:
         img_path : str, path to the image file
-        resize : tuple, (h, w) target resize
     """
     assert os.path.isfile(img_path), f'img file not exist: {img_path}'
     img = Image.open(img_path)
-    if resize is not None:
-        h, w = resize
-        img = img.resize((w, h), Image.ANTIALIAS)
-    return img
+    return img.convert('RGB')
 
 
 def save_img(w_path, data):
