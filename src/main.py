@@ -16,8 +16,8 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
                     format = "%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 
 
-img_style_path = None
-data_dir = None
+data_dir = '/userhome/34/h3509807/train2014'
+style_img_path = '/userhome/34/h3509807/cuson_arts.jpg'
 img_size = 128
 bs = 8
 content_weight = 1e5
@@ -26,19 +26,27 @@ is_one_cycle = True
 n_epochs = 2
 lr = 1e-3
 
-ds = NeuralDataset(data_dir, transform = get_transforms)
-data = DataBunch(ds)
+tfms = get_transforms(img_size)
+ds = NeuralDataset(data_dir, transform = tfms)
+train_dl = DataLoader(
+	        ds, batch_size = bs, shuffle = True, num_workers = 0
+	        )
+val_dl = DataLoader(
+            ds, batch_size = 1, shuffle = False, num_workers = 0
+            )
+data = DataBunch(train_dl, val_dl)
 
 model = MetaModel(vgg_grad = False)
 
 essential_cb = partial(
     EssentialCallback, 
     meta_model = model, 
-    img_style_path = img_style_path, 
+    style_img_path = style_img_path, 
     img_size = img_size, bs = bs
     )
 save_cb = partial(
-    SaveCallback, meta_model = model, chkpt_epoch = 1
+    SaveCallback, meta_model = model, 
+    chkpt_epoch = 1, chkpt_model_dir = os.getcwd()
     )
 
 perceptual_loss = partial(
@@ -48,9 +56,9 @@ perceptual_loss = partial(
     )
 
 
-learn = Learner(data, model, 
+learn = Learner(data, model.transformer, # only optimize on transformer net 
                 loss_func = perceptual_loss(), 
-                metrics = [metrics.loss],
+                opt_func = partial(optim.Adam, betas = (0.5, 0.99)) if is_one_cycle else optim.Adam,
                 callback_fns = [essential_cb, save_cb])
 
 start = time.time()
@@ -60,6 +68,5 @@ if is_one_cycle:
 else:
     learn.fit(n_epochs, lr)
     suffix = 'wocycle'
-learn.save(f'coco_{suffix}_e{epoch:03}fit')
 end = time.time()
 print(f'training complete: {(end - start) / 60} mins')

@@ -12,12 +12,11 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
 
 
 class NeuralDataset(Dataset):
-    EXTENSIONS = set(k for k,v in mimetypes.types_map.items() if v.startswith('image/'))
 
-    def __init__(self, data_dir, **kwargs):
-        super(NeuralDataset, self).__init__(**kwargs)
+    def __init__(self, data_dir, transform):
         self.data_dir = data_dir
-        self.fnames = [f for f in os.scandir(data_dir) if f.split('.')[-1].lower() in self.EXTENSIONS]
+        self.fnames = [f.name for f in os.scandir(data_dir)]
+        self.transform = transform
         logging.info(f'NeuralDataset built -- ({len(self)})')
 
     def __len__(self):
@@ -25,5 +24,6 @@ class NeuralDataset(Dataset):
 
     def __getitem__(self, idx):
         fname = self.fnames[idx]
-        img = load_img(os.path.join(self.img_dir, fname))
-        return img
+        img = load_img(os.path.join(self.data_dir, fname))
+        img = self.transform(img)
+        return img, {'content_target': img.detach()}

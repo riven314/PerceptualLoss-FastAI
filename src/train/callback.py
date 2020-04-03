@@ -2,7 +2,7 @@ import os
 from collections import namedtuple
 
 import torch
-from fastai.callback import Callback
+from fastai.basic_train import LearnerCallback
 
 from src.common.lin_utils import gram_matrix
 from src.common.os_utils import load_img
@@ -13,7 +13,7 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
                     format = "%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 
 
-class EssentialCallback(Callback):
+class EssentialCallback(LearnerCallback):
     """
     workflow that feed right inputs to the loss function
     compute the feature-wise gram matrix of a style image only once
@@ -24,13 +24,14 @@ class EssentialCallback(Callback):
         """ pre-compute gram matrix for the style image """
         super().__init__(learn)
         # pretransform style image
-        self.style_gms = self.precompute_style_gms(
+        self.precompute_style_gms(
             meta_model, style_img_path, img_size, bs
-        )
+            )
 
     def precompute_style_gms(self, meta_model, style_img_path, img_size, bs):
-        device = torch.cuda('cuda' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         style_img = load_img(style_img_path)
+        logging.info(f'read style img: {style_img_path}')
         style_t = get_style_transforms(img_size)(style_img)
         style_t = style_t.repeat(bs, 1, 1, 1).to(device)
         style_batch = meta_model(style_t, vgg_only = True)
@@ -40,22 +41,22 @@ class EssentialCallback(Callback):
         self.style_gms = gms_tup(*[gram_matrix(t) for t in style_batch])
         logging.info(f'gram matrix for style image is precomputed')
 
-    def on_loss_begin(self, last_input, **kwargs):
+    def on_batch_begin(self, last_target, **kwargs):
         """
         overwrite last_target into a dict before feeding into loss function
         """
-        target = {'style_target': self.style_gms, 'content_target': last_input}
-        return {'last_target': target} 
+        last_target['style_target'] = self.style_gms
+        return {'last_target': last_target} 
 
 
-class SaveCallback(Callback):
+class SaveCallback(LearnerCallback):
     _order = 2
     
     def __init__(self, learn, meta_model, chkpt_epoch, chkpt_model_dir):
         super().__init__(learn)
         self.chkpt_epoch = chkpt_epoch
         self.meta_model = meta_model
-        self.chkpt_model_dir = self.chkpt_model_dir
+        self.chkpt_model_dir = chkpt_model_dir
         self.device = torch.device('cuda' if torch.cuda.is_available else 'cpu')
             
     def on_epoch_end(self, epoch, **kwargs):
@@ -72,7 +73,7 @@ class SaveCallback(Callback):
 
     def on_train_end(self, epoch, **kwargs):
         self.meta_model.transformer.eval().cpu()
-        chkpt_model_fname = 'final_epoch_{epcoh:03}.pth'
+        chkpt_model_fname = f'final_epoch_{epoch:03}.pth'
         chkpt_model_path = os.path.join(self.chkpt_model_dir, chkpt_model_fname)
         torch.save(
             self.meta_model.transformer.state_dict(), chkpt_model_path
