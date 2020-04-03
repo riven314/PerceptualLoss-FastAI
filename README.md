@@ -20,4 +20,5 @@ Implementing ["Perceptual Losses for Real-Time Style Transfer and Super-Resoluti
 - left with dataset definition
 
 #### [04/04/2020]
-- write hook in callbacks later
+- integrate hooks in callbacks
+- add tensorboard callbacks
