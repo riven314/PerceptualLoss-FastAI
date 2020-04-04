@@ -41,6 +41,8 @@ class PerceptualLoss(nn.Module):
         for ft_y, gm_s in zip(output, gram_style):
             # gm_y / gm_s: (BS, C_i, C_i)
             gm_y = gram_matrix(ft_y)
-            style_loss += self.mse(gm_y, gm_s)
+            # batch_n for handle uneven last batch
+            batch_n = gm_y.shape[0]
+            style_loss += self.mse(gm_y, gm_s[:batch_n])
         style_loss *= self.style_weight
         return content_loss + style_loss
