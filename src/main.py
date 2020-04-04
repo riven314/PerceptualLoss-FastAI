@@ -18,8 +18,9 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
 
 data_dir = '/userhome/34/h3509807/train2014'
 style_img_path = '/userhome/34/h3509807/cuson_arts.jpg'
+chkpt_model_dir = 'chkpts'
 img_size = 128
-bs = 8
+bs = 16
 content_weight = 1e5
 style_weight = 1e10
 is_one_cycle = True
@@ -56,10 +57,11 @@ perceptual_loss = partial(
     )
 
 
-learn = Learner(data, model.transformer, # only optimize on transformer net 
+learn = Learner(data, model, # only optimize on transformer net 
                 loss_func = perceptual_loss(), 
                 opt_func = partial(optim.Adam, betas = (0.5, 0.99)) if is_one_cycle else optim.Adam,
-                callback_fns = [essential_cb, save_cb])
+                callback_fns = [essential_cb, save_cb],
+                layer_groups = model.transformer)
 
 start = time.time()
 if is_one_cycle:

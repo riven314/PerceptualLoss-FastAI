@@ -35,9 +35,7 @@ class PerceptualLoss(nn.Module):
         """
         x, gram_style = target['content_target'], target['style_target']
         feat_x = self.model(x, vgg_only = True)
-
-        content_loss = self.mse(feat_x.relu2_2, output.relu2_2)
-        content_loss *= self.content_weight
+        content_loss = self.content_weight * self.mse(feat_x.relu2_2, output.relu2_2)
 
         style_loss = 0.
         for ft_y, gm_s in zip(output, gram_style):

@@ -30,6 +30,12 @@ class TransformerNet(torch.nn.Module):
         # Non-linearities
         self.relu = torch.nn.ReLU()
 
+    def __iter__(self):
+        return iter(self._modules.values())
+    
+    def __len__(self):
+        return len(self._modules)
+
     def forward(self, X):
         y = self.relu(self.in1(self.conv1(X)))
         y = self.relu(self.in2(self.conv2(y)))

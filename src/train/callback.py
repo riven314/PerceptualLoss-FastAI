@@ -34,7 +34,8 @@ class EssentialCallback(LearnerCallback):
         logging.info(f'read style img: {style_img_path}')
         style_t = get_style_transforms(img_size)(style_img)
         style_t = style_t.repeat(bs, 1, 1, 1).to(device)
-        style_batch = meta_model(style_t, vgg_only = True)
+        with torch.no_grad():
+            style_batch = meta_model(style_t, vgg_only = True)
         # store gram matrix as namedtuple
         gms_tup = namedtuple('StyleGramMatrices', 
                              ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3'])

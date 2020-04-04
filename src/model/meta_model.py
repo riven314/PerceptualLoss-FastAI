@@ -28,7 +28,7 @@ class MetaModel(nn.Module):
         self.transformer = TransformerNet().to(device)
 
         ms = [self.vgg.subnet[i] for i in self.HOOK_VGG_IDX]
-        self._hooks = VGGHooks(ms)
+        self._hooks = VGGHooks(ms, detach = False)
 
         
         self.mean = torch.tensor(self.IMAGENET_MEAN).view(-1, 1, 1).to(device)

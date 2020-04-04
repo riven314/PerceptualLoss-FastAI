@@ -49,11 +49,11 @@ class Hook():
 
 
 class VGGHooks():
-    def __init__(self, ms):
+    def __init__(self, ms, detach = False):
         """
         assume ms is in the right order: vgg[3], vgg[8], vgg[15], vgg[22]
         """
-        self.hooks = [Hook(m, self.hook_feature, detach = True) for m in ms]
+        self.hooks = [Hook(m, self.hook_feature, detach = detach) for m in ms]
 
     def hook_feature(self, m, inp, outp):
         return outp
