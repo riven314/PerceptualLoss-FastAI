@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     # optional functionality from fastai
     parser.add_argument('--is_one_cycle', action = 'store_true')
-    parser.add_argument('--is_fp16', action = 'action_true')
+    parser.add_argument('--is_fp16', action = 'store_true')
     args = parser.parse_args()
 
     # setup data
