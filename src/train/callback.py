@@ -58,6 +58,7 @@ class SaveCallback(LearnerCallback):
         self.chkpt_epoch = chkpt_epoch
         self.meta_model = meta_model
         self.chkpt_model_dir = chkpt_model_dir
+        os.makedirs(chkpt_model_dir, exist_ok = True)
         self.device = torch.device('cuda' if torch.cuda.is_available else 'cpu')
             
     def on_epoch_end(self, epoch, **kwargs):

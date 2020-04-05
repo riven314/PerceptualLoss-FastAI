@@ -1,9 +1,11 @@
 import os
 import time
+import argparse
 from functools import partial
 
 from fastai import *
 from fastai.vision import *
+from torch.utils.data import DataLoader
 
 from src.model.meta_model import MetaModel
 from src.data.dataset import NeuralDataset
@@ -16,59 +18,67 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
                     format = "%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 
 
-data_dir = '/userhome/34/h3509807/train2014'
-style_img_path = 'style/cuson_arts.jpg'
-chkpt_model_dir = 'chkpts'
-img_size = 128
-bs = 16
-content_weight = 1e5
-style_weight = 1e10
-is_one_cycle = True
-n_epochs = 2
-lr = 1e-3
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Fire a training for fast neural style transfer')
+    parser.add_argument('--data_dir', required = True, type = str)
+    parser.add_argument('--style_img_path', required = True, type = str)
+    parser.add_argument('--chkpt_model_dir', required = True, type = str)
 
-tfms = get_transforms(img_size)
-ds = NeuralDataset(data_dir, transform = tfms)
-train_dl = DataLoader(
-	        ds, batch_size = bs, shuffle = True, num_workers = 0
-	        )
-val_dl = DataLoader(
-            ds, batch_size = 1, shuffle = False, num_workers = 0
-            )
-data = DataBunch(train_dl, val_dl)
+    # optional training setup
+    parser.add_argument('--img_size', default = 128, type = int)
+    parser.add_argument('--bs', default = 16, type = int)
+    parser.add_argument('--content_weight', default = 1e5, type = float)
+    parser.add_argument('--style_weight', default = 1e10, type = float)
+    parser.add_argument('--n_epochs', default = 2, type = int)
+    parser.add_argument('--lr', default = 1e-3, type = float)
 
-model = MetaModel(vgg_grad = False)
+    # optional functionality from fastai
+    parser.add_argument('--is_one_cycle', action = 'store_true')
+    parser.add_argument('--is_fp16', action = 'action_true')
+    args = parser.parse_args()
 
-essential_cb = partial(
-    EssentialCallback, 
-    meta_model = model, 
-    style_img_path = style_img_path, 
-    img_size = img_size, bs = bs
-    )
-save_cb = partial(
-    SaveCallback, meta_model = model, 
-    chkpt_epoch = 1, chkpt_model_dir = os.getcwd()
-    )
+    # setup data
+    tfms = get_transforms(args.img_size)
+    ds = NeuralDataset(args.data_dir, transform = tfms)
+    train_dl = DataLoader(ds, batch_size = args.bs, shuffle = True, num_workers = 0)
+    val_dl = DataLoader(ds, batch_size = 1, shuffle = False, num_workers = 0)
+    data = DataBunch(train_dl, val_dl)
 
-perceptual_loss = partial(
-    PerceptualLoss, model = model, 
-    content_weight = content_weight, 
-    style_weight = style_weight
-    )
+    # setup model and callbacks
+    model = MetaModel(vgg_grad = False)
+    essential_cb = partial(
+        EssentialCallback, 
+        meta_model = model, 
+        style_img_path = args.style_img_path, 
+        img_size = args.img_size, bs = args.bs
+        )
+    save_cb = partial(
+        SaveCallback, meta_model = model, 
+        chkpt_epoch = 1, chkpt_model_dir = args.chkpt_model_dir
+        )
 
+    # setup loss
+    perceptual_loss = partial(
+        PerceptualLoss, model = model, 
+        content_weight = args.content_weight, 
+        style_weight = args.style_weight
+        )
 
-learn = Learner(data, model, # only optimize on transformer net 
-                loss_func = perceptual_loss(), 
-                opt_func = partial(optim.Adam, betas = (0.5, 0.99)) if is_one_cycle else optim.Adam,
-                callback_fns = [essential_cb, save_cb],
-                layer_groups = model.transformer)
+    # setup learner and start training
+    learn = Learner(
+        data, model, # only optimize on transformer net 
+        loss_func = perceptual_loss(), 
+        opt_func = partial(optim.Adam, betas = (0.5, 0.99)) if not args.is_one_cycle else optim.Adam,
+        callback_fns = [essential_cb, save_cb],
+        layer_groups = model.transformer
+        )
+    if args.is_fp16:
+        learn = learn.to_fp16()
 
-start = time.time()
-if is_one_cycle:
-    learn.fit_one_cycle(n_epochs, lr)
-    suffix = 'wcycle'
-else:
-    learn.fit(n_epochs, lr)
-    suffix = 'wocycle'
-end = time.time()
-print(f'training complete: {(end - start) / 60} mins')
+    start = time.time()
+    if args.is_one_cycle:
+        learn.fit_one_cycle(args.n_epochs, args.lr)
+    else:
+        learn.fit(args.n_epochs, args.lr)
+    end = time.time()
+    print(f'training complete: {(end - start) / 60} mins')
