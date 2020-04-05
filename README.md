@@ -7,8 +7,11 @@ Implementing ["Perceptual Losses for Real-Time Style Transfer and Super-Resoluti
 <img src = 'style/cuson_arts.jpg' height="300px">
 
 <figcaption>
+<div align='center'>
 <a href="https://www.facebook.com/Cuson.LoChiKong/photos/t.657699147/2269082743183734/?type=3&theater">An Artwork from HK Artist, Cuson Lo
-</a></figcaption>
+</a>
+</div>
+</figcaption>
 
 </div>
 
