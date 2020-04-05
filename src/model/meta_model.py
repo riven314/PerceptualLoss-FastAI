@@ -23,14 +23,13 @@ class MetaModel(nn.Module):
 
     def __init__(self, vgg_grad = False):
         super(MetaModel, self).__init__()
-        device = torch.device('cuda' if torch.cuda.is_available else 'cpu')
-        self.vgg = VGG16(requires_grad = vgg_grad).to(device)
-        self.transformer = TransformerNet().to(device)
+        self.vgg = VGG16(requires_grad = vgg_grad)
+        self.transformer = TransformerNet()
 
         ms = [self.vgg.subnet[i] for i in self.HOOK_VGG_IDX]
         self._hooks = VGGHooks(ms, detach = False)
-
         
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.mean = torch.tensor(self.IMAGENET_MEAN).view(-1, 1, 1).to(device)
         self.std = torch.tensor(self.IMAGENET_STD).view(-1, 1, 1).to(device)
 

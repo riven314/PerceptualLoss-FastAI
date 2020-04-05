@@ -18,7 +18,16 @@ def get_transforms(img_size):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255.))
     ]
-    logging.info(f'data transform is initialized')
+    logging.info(f'train data transform is initialized')
+    return transforms.Compose(tfms_ls)
+
+
+def get_test_transforms():
+    tfms_ls = [
+            transforms.ToTensor(),
+            transforms.Lambda(lambda x: x.mul(255.))
+        ]
+    logging.info(f'test data transform is initialized')
     return transforms.Compose(tfms_ls)
 
 

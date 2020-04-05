@@ -17,7 +17,7 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
 
 
 data_dir = '/userhome/34/h3509807/train2014'
-style_img_path = '/userhome/34/h3509807/cuson_arts.jpg'
+style_img_path = 'style/cuson_arts.jpg'
 chkpt_model_dir = 'chkpts'
 img_size = 128
 bs = 16
