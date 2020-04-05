@@ -34,7 +34,6 @@ if __name__ == '__main__':
 
     # optional functionality from fastai
     parser.add_argument('--is_one_cycle', action = 'store_true')
-    parser.add_argument('--is_fp16', action = 'store_true')
     args = parser.parse_args()
 
     # setup data
@@ -72,8 +71,6 @@ if __name__ == '__main__':
         callback_fns = [essential_cb, save_cb],
         layer_groups = model.transformer
         )
-    if args.is_fp16:
-        learn = learn.to_fp16()
 
     start = time.time()
     if args.is_one_cycle:
