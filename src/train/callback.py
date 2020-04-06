@@ -7,6 +7,7 @@ from fastai.basic_train import LearnerCallback
 from src.common.lin_utils import gram_matrix
 from src.common.os_utils import load_img
 from src.data.tfms import get_style_transforms
+from src.model.hook import VGGHooks
 
 import logging
 logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
@@ -15,40 +16,57 @@ logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
 
 class EssentialCallback(LearnerCallback):
     """
-    workflow that feed right inputs to the loss function
-    compute the feature-wise gram matrix of a style image only once
+    apply hooks on VGG features
+    apply tensorboard to keep track of loss and other evolution
     """
     _order = 1
+    hook_vgg_idxs = [3, 8, 15, 22]    
 
     def __init__(self, learn, meta_model, style_img_path, img_size, bs):
         """ pre-compute gram matrix for the style image """
         super().__init__(learn)
-        # pretransform style image
-        self.precompute_style_gms(
-            meta_model, style_img_path, img_size, bs
-            )
+        self.meta_model = meta_model
+        self.init_hooks()
+        self.precompute_style_gms(style_img_path, img_size, bs)
+        
+    def init_hooks(self):
+        ms = [self.meta_model.vgg.subnet[idx] for idx in self.hook_vgg_idxs]
+        # hooks are used in backprog
+        self._hooks = VGGHooks(ms, detach = False)
+        logging.info('hooks are initialized')
 
-    def precompute_style_gms(self, meta_model, style_img_path, img_size, bs):
+    @property
+    def hooks(self):
+        return self._hooks.stored
+
+    def precompute_style_gms(self, style_img_path, img_size, bs):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         style_img = load_img(style_img_path)
         logging.info(f'read style img: {style_img_path}')
         style_t = get_style_transforms(img_size)(style_img)
         style_t = style_t.repeat(bs, 1, 1, 1).to(device)
         with torch.no_grad():
-            style_batch = meta_model(style_t, vgg_only = True)
+            _ = self.meta_model(style_t, vgg_only = True)
         # store gram matrix as namedtuple
         gms_tup = namedtuple('StyleGramMatrices', 
                              ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3'])
-        self.style_gms = gms_tup(*[gram_matrix(t) for t in style_batch])
-        logging.info(f'gram matrix for style image is precomputed')
+        self.style_gms = gms_tup(*[gram_matrix(t) for t in self.hooks])
+        logging.info(f'gram matrices for style image is precomputed')
 
-    def on_batch_begin(self, last_target, **kwargs):
-        """
-        overwrite last_target into a dict before feeding into loss function
-        """
-        last_target['style_target'] = self.style_gms
-        return {'last_target': last_target} 
+    def on_batch_begin(self, last_input, **kwargs):
+        """ update state_dict['last_target'] """
+        with torch.no_grad():
+            _ = self.meta_model(last_input, vgg_only = True)
+        target_dict = {
+            'content_target': self.hooks,
+            'style_target': self.style_gms
+            }
+        return {'last_target':  target_dict}
 
+    def on_loss_begin(self, last_input, **kwargs):
+        """ update state_dict['last_output'] """
+        return {'last_output': self.hooks}
+        
 
 class SaveCallback(LearnerCallback):
     _order = 2

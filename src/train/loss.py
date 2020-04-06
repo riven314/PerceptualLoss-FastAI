@@ -29,12 +29,11 @@ class PerceptualLoss(nn.Module):
                             relu1_2, relu2_2, relu3_3, rel4_3
                         }
                     ** each: (BS, C_i, C_i)
-                    'content_target': original model input
+                    'content_target': features of vgg(x), without transformer
                     }
         
         """
-        x, gram_style = target['content_target'], target['style_target']
-        feat_x = self.model(x, vgg_only = True)
+        feat_x, gram_style = target['content_target'], target['style_target']
         content_loss = self.content_weight * self.mse(feat_x.relu2_2, output.relu2_2)
 
         style_loss = 0.
