@@ -40,6 +40,7 @@ if __name__ == '__main__':
     tfms = get_transforms(args.img_size)
     ds = NeuralDataset(args.data_dir, transform = tfms)
     train_dl = DataLoader(ds, batch_size = args.bs, shuffle = True, num_workers = 0)
+    # val_dl serves as dummy
     val_dl = DataLoader(ds, batch_size = 1, shuffle = False, num_workers = 0)
     data = DataBunch(train_dl, val_dl)
 
@@ -47,13 +48,12 @@ if __name__ == '__main__':
     model = MetaModel(vgg_grad = False)
     essential_cb = partial(
         EssentialCallback, 
-        meta_model = model, 
-        style_img_path = args.style_img_path, 
-        img_size = args.img_size, bs = args.bs
+        style_img_path = args.style_img_path
         )
     save_cb = partial(
-        SaveCallback, meta_model = model, 
-        chkpt_epoch = 1, chkpt_model_dir = args.chkpt_model_dir
+        SaveCallback, 
+        chkpt_epoch = 1, 
+        chkpt_model_dir = args.chkpt_model_dir
         )
 
     # setup loss
