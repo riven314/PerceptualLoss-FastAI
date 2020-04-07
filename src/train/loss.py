@@ -14,25 +14,6 @@ class PerceptualLoss(nn.Module):
         self.mse = nn.MSELoss()
 
     def forward(self, output, target):
-        """
-        output = vgg(normalize(transformer(x)))
-        target = x + style z
-
-        :param:
-            output: namedtuple, feature maps output from MetaModel -- {
-                        relu1_2, relu2_2, relu3_3, relu4_3
-                    }
-                    ** each: (BS, C_i, W, H)
-
-            target: dict, original input of MetaModel {
-                    'style_target': nametuple, gram matrix for style image -- {
-                            relu1_2, relu2_2, relu3_3, rel4_3
-                        }
-                    ** each: (BS, C_i, C_i)
-                    'content_target': features of vgg(x), without transformer
-                    }
-        
-        """
         feat_x, gram_style = target['content_target'], target['style_target']
         content_loss = self.content_weight * self.mse(feat_x.relu2_2, output.relu2_2)
 
@@ -44,4 +25,7 @@ class PerceptualLoss(nn.Module):
             batch_n = gm_y.shape[0]
             style_loss += self.mse(gm_y, gm_s[:batch_n])
         style_loss *= self.style_weight
+        
+        self.content_loss = content_loss.detach().item()
+        self.style_loss = style_loss.detach().item()
         return content_loss + style_loss

@@ -1,0 +1,2 @@
+python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/cuson_arts.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir v2_wcycle --update_iter 200 --n_epochs 2 --lr 5e-3 --is_one_cycle
+python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/cuson_arts.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir v2_wcycle --update_iter 200 --n_epochs 2 --lr 1e-3

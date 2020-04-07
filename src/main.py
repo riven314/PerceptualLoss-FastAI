@@ -11,7 +11,7 @@ from src.model.meta_model import MetaModel
 from src.data.dataset import NeuralDataset
 from src.data.tfms import get_transforms
 from src.train.loss import PerceptualLoss
-from src.train.callback import EssentialCallback, SaveCallback
+from src.train.callback import EssentialCallback, SaveCallback, TensorboardCallback
 
 import logging
 logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Fire a training for fast neural style transfer')
     parser.add_argument('--data_dir', required = True, type = str)
     parser.add_argument('--style_img_path', required = True, type = str)
+    parser.add_argument('--content_img_path', required = True, type = str)
     parser.add_argument('--chkpt_model_dir', required = True, type = str)
 
     # optional training setup
@@ -30,7 +31,8 @@ if __name__ == '__main__':
     parser.add_argument('--content_weight', default = 1e5, type = float)
     parser.add_argument('--style_weight', default = 1e10, type = float)
     parser.add_argument('--n_epochs', default = 2, type = int)
-    parser.add_argument('--lr', default = 1e-3, type = float)
+    parser.add_argument('--lr', default = 5e-3, type = float) # found by learner.lr_find
+    parser.add_argument('--update_iter', default = 200, type = int)
 
     # optional functionality from fastai
     parser.add_argument('--is_one_cycle', action = 'store_true')
@@ -43,19 +45,28 @@ if __name__ == '__main__':
     # val_dl serves as dummy
     val_dl = DataLoader(ds, batch_size = 1, shuffle = False, num_workers = 0)
     data = DataBunch(train_dl, val_dl)
+    data.val_dl = None
 
     # setup model and callbacks
     model = MetaModel(vgg_grad = False)
     essential_cb = partial(
         EssentialCallback, 
-        style_img_path = args.style_img_path
+        chkpt_dir = args.chkpt_model_dir,
+        content_path = args.content_img_path,
+        style_path = args.style_img_path,
+        plot_iter = args.update_iter
         )
     save_cb = partial(
         SaveCallback, 
         chkpt_epoch = 1, 
         chkpt_model_dir = args.chkpt_model_dir
         )
-
+    tb_cb = partial(
+        TensorboardCallback,
+        log_dir = args.chkpt_model_dir,
+        update_iter = args.update_iter
+        )
+    
     # setup loss
     perceptual_loss = partial(
         PerceptualLoss, model = model, 
@@ -68,7 +79,7 @@ if __name__ == '__main__':
         data, model, # only optimize on transformer net 
         loss_func = perceptual_loss(), 
         opt_func = partial(optim.Adam, betas = (0.5, 0.99)) if not args.is_one_cycle else optim.Adam,
-        callback_fns = [essential_cb, save_cb],
+        callback_fns = [essential_cb, save_cb, tb_cb],
         layer_groups = model.transformer
         )
 

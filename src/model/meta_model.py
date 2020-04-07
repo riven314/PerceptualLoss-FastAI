@@ -22,7 +22,7 @@ class MetaModel(nn.Module):
 
     def __init__(self, vgg_grad = False):
         super(MetaModel, self).__init__()
-        self.vgg = VGG16(requires_grad = vgg_grad)
+        self.vgg = VGG16(requires_grad = vgg_grad).eval()
         self.transformer = TransformerNet()
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

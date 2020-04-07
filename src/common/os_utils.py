@@ -33,3 +33,15 @@ def save_img(w_path, data):
     img.save(w_path)
     logging.info(f'image written: {w_path}')
     return None
+
+
+def process_img(img_path, tfms):
+    """
+    load in image and transform it into Tensors, ready for model input
+    """
+    assert os.path.isfile(img_path), f'img_path not exist: {img_path}'
+    content_img = load_img(img_path)    
+    content_img = tfms(content_img)
+    # convert to (B, C, H, W)
+    content_img = content_img.unsqueeze(0)
+    return content_img

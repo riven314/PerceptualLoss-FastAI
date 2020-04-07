@@ -27,7 +27,6 @@ def get_test_transforms():
             transforms.ToTensor(),
             transforms.Lambda(lambda x: x.mul(255.))
         ]
-    logging.info(f'test data transform is initialized')
     return transforms.Compose(tfms_ls)
 
 

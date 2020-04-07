@@ -4,25 +4,13 @@ import re
 import torch
 from torchvision import transforms
 
-from src.common.os_utils import load_img, save_img
+from src.common.os_utils import process_img, save_img
 from src.data.tfms import get_test_transforms
 from src.model.meta_model import MetaModel
 
 import logging
 logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
                     format = "%(asctime)s — %(name)s — %(levelname)s — %(message)s")
-
-
-def process_img(img_path, tfms):
-    """
-    load in image and transform it into Tensors, ready for model input
-    """
-    assert os.path.isfile(img_path), f'img_path not exist: {img_path}'
-    content_img = load_img(img_path)    
-    content_img = tfms(content_img)
-    # convert to (B, C, H, W)
-    content_img = content_img.unsqueeze(0)
-    return content_img
 
 
 def load_model(model_path):
