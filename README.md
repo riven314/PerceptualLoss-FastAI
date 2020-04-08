@@ -30,12 +30,18 @@ Implementing ["Perceptual Losses for Real-Time Style Transfer and Super-Resoluti
 3. [fastai -- documentation on what a callback can unpack from kwargs](https://docs.fast.ai/callback.html)
 4. [fastai2 -- another implementation on fast neural style transfer](https://github.com/lgvaz/projects/blob/master/vision/style/coco.ipynb)
 5. [pytorch -- fast-neural-style](https://github.com/pytorch/examples/tree/master/fast_neural_style)
-6. [tensorflow -- fast neural style transfer with a rich documentation](https://github.com/lengstrom/fast-style-transfer)
-7. [arxiv -- Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
-8. [arxiv -- Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155)
-9. [medium -- 10 Useful ML Practices For Python Developers](https://medium.com/modern-nlp/10-great-ml-practices-for-python-developers-b089eefc18fc)
+6. [cs231n -- total variation loss implementation](https://github.com/chongyangma/cs231n/blob/master/assignments/assignment3/style_transfer_pytorch.py)
+7. [tensorflow -- fast neural style transfer with a rich documentation](https://github.com/lengstrom/fast-style-transfer)
+8. [arxiv -- Instance Normalization: The Missing Ingredient for Fast Stylization](https://arxiv.org/abs/1607.08022)
+9. [arxiv -- Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155)
+10. [medium -- Practical Techniques for getting Style Transfer to Work](https://towardsdatascience.com/practical-techniques-for-getting-style-transfer-to-work-19884a0d69eb)
 
 ## Log
 [05/04/2020]
-- apply hook on callbacks
-- add tensorboard callbacks with gram matrix, stylised images
+- completed hooks callback and tensorboard callbacks
+
+[08/04/2020]
+pending experiments:
+- try transformer with "downsample-first-upsample-final" design (for speeding up inference, training)
+- try total variation loss
+- try globally reducing weight for all losses
