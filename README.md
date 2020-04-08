@@ -45,3 +45,4 @@ pending experiments:
 - try transformer with "downsample-first-upsample-final" design (for speeding up inference, training)
 - try total variation loss
 - try globally reducing weight for all losses
+- place test sets into validation dataloader (code refactoring)
