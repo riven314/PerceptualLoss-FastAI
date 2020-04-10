@@ -30,13 +30,13 @@ if __name__ == '__main__':
     parser.add_argument('--bs', default = 16, type = int, help = 'batch size')
     parser.add_argument('--content_weight', default = 1e5, type = float, help = 'weight for content weight')
     parser.add_argument('--style_weight', default = 1e10, type = float, help = 'weight for style loss, need to be high enough as style loss has small scale')
-    parser.add_argument('--n_epochs', default = 2, type = int, 'no. of epochs')
+    parser.add_argument('--n_epochs', default = 2, type = int, help = 'no. of epochs')
     parser.add_argument('--lr', default = 5e-3, type = float, help = 'learning rate') # found by learner.lr_find
     parser.add_argument('--update_iter', default = 200, type = int, help = 'iterations to checkpoint test image and gram matrix plotting')
-    parser.add_argument('--is_downsample', action = 'store_true', help = 'whether to use downsample transformer for speeding up both training and inference')
 
     # optional functionality from fastai
-    parser.add_argument('--is_one_cycle', action = 'store_true')
+    parser.add_argument('--is_one_cycle', action = 'store_true', help = 'whether to use one cycle policy for training')
+    parser.add_argument('--is_downsample', action = 'store_true', help = 'whether to use downsample transformer for speeding up both training and inference')
     args = parser.parse_args()
 
     # setup data
