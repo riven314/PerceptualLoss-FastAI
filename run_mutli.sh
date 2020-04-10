@@ -1,2 +1,2 @@
-python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/cuson_arts.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir chkpts/v2_2epoch_wcycle --update_iter 200 --n_epochs 2 --lr 5e-3 --is_one_cycle
-python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/cuson_arts.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir chkpts/v2_2epoch_wocycle --update_iter 200 --n_epochs 2 --lr 1e-3
+python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/joker.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir chkpts/v4_2epoch_wodown_wcycle --update_iter 200 --n_epochs 2 --lr 5e-3 --is_one_cycle
+python -m src.main --data_dir /userhome/34/h3509807/train2014 --style_img_path style/joker.jpg --content_img_path test/hk_001.jfif --chkpt_model_dir chkpts/v4_2epoch_wdown_wcycle --update_iter 200 --n_epochs 2 --lr 5e-3 --is_one_cycle --is_downsample
