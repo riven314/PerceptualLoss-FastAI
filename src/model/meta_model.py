@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from src.model.hook import VGGHooks
 from src.model.vgg import VGG16
-from src.model.transformer_net import TransformerNet
+from src.model.transformer_net import TransformerNet, TransformerNetDownsample
 
 import logging
 logging.basicConfig(level = logging.INFO, handlers = [logging.StreamHandler()],
@@ -20,10 +20,14 @@ class MetaModel(nn.Module):
     IMAGENET_MEAN = [0.485, 0.456, 0.406]
     IMAGENET_STD = [0.229, 0.224, 0.225]
 
-    def __init__(self, vgg_grad = False):
+    def __init__(self, is_downsample = False, vgg_grad = False):
         super(MetaModel, self).__init__()
         self.vgg = VGG16(requires_grad = vgg_grad).eval()
-        self.transformer = TransformerNet()
+
+        if is_downsample:
+            self.transformer = TransformerNetDownsample()
+        else:
+            self.transformer = TransformerNet()
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.mean = torch.tensor(self.IMAGENET_MEAN).view(-1, 1, 1).to(device)

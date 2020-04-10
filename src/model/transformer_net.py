@@ -36,8 +36,8 @@ class TransformerNet(torch.nn.Module):
     def __len__(self):
         return len(self._modules)
 
-    def forward(self, X):
-        y = self.relu(self.in1(self.conv1(X)))
+    def forward(self, x):
+        y = self.relu(self.in1(self.conv1(x)))
         y = self.relu(self.in2(self.conv2(y)))
         y = self.relu(self.in3(self.conv3(y)))
         y = self.res1(y)
@@ -50,6 +50,22 @@ class TransformerNet(torch.nn.Module):
         y = self.deconv3(y)
         return y
 
+
+class TransformerNetDownsample(TransformerNet):
+    def __init__(self):
+        super().__init__()
+        self.down = torch.nn.Upsample(scale_factor = 0.5, mode = 'bilinear')
+        self.deconv4 = UpsampleConvLayer(3, 3, kernel_size = 3, stride = 1, upsample = 2)
+        self.in6 = torch.nn.InstanceNorm2d(3, affine = True)
+        self.decovn5 = ConvLayer(3, 3, kernel_size = 3, stride = 1)
+
+    def forward(self, x):
+        y = self.down(x)
+        y = super().forward(y)
+        y = self.relu(self.in6(self.deconv4(y)))
+        y = self.decovn5(y)
+        return y
+    
 
 class ConvLayer(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
